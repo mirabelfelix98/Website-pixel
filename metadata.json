@@ -1,0 +1,5 @@
+{
+  "name": "Website Pixel Control Dashboard",
+  "description": "A centralized dashboard to control, track, and optimize external websites using Facebook Pixel IDs via a tracking-link wrapper system.",
+  "requestFramePermissions": []
+}

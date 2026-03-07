@@ -119,7 +119,7 @@ async function startServer() {
 
   // Login
   app.post('/api/auth/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
     
     try {
       const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
@@ -129,9 +129,19 @@ async function startServer() {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
+      // If rememberMe is true, set expiration to 30 days, otherwise 24 hours
+      const expiresIn = rememberMe ? '30d' : '24h';
+      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn });
       
-      res.cookie('token', token, { httpOnly: true, secure: false, sameSite: 'lax' });
+      // Cookie maxAge in milliseconds: 30 days or 24 hours
+      const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+
+      res.cookie('token', token, { 
+        httpOnly: true, 
+        secure: false, // Set to true in production with HTTPS
+        sameSite: 'lax',
+        maxAge: maxAge
+      });
       res.json({ success: true, user: { id: user.id, email: user.email } });
     } catch (error) {
       console.error(error);
